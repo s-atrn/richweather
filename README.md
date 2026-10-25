@@ -31,9 +31,17 @@ For example: New York can be written as: `New_York new_york NEw_yOrK "New york" 
 ```bash
 git clone https://github.com/s-atrn/richweather
 cd richweather/
-pip install .
+pip install python-weather termcolor pyyaml # add --break-system-packages after pip install if using arch
 mkdir ~/.config/richweather/
 cp richweather.yaml ~/.config/richweather/
+cd richweather
+chmod +x richweather
+sudo cp richweather.py /usr/local/bin/richweather
+alias richweather='python3 /usr/local/bin/richweather'
+```
+Lastly add this line to the end of your `.bashrc` or `.zshrc`
+```
+alias richweather='python3 /usr/local/bin/richweather'
 ```
 
 ## Configuring
