@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import asyncio
+import json
 import os
 
 import python_weather
@@ -58,45 +59,55 @@ def weather_emoji(weather):
     """
     Gets color and emoji for weather display.
     """
+    K = python_weather.enums.Kind
 
-    if weather == python_weather.enums.Kind.CLOUDY:
+    # Safe lookup helper for enums across package version updates
+    def k(name, *fallbacks):
+        if hasattr(K, name):
+            return getattr(K, name)
+        for fb in fallbacks:
+            if hasattr(K, fb):
+                return getattr(K, fb)
+        return None
+
+    if weather == k('CLOUDY'):
         return [weather, "", "light_grey"]
-    elif weather == python_weather.enums.Kind.FOG:
+    elif weather == k('FOG'):
         return [weather, "󰖑", "light_grey"]
-    elif weather == python_weather.enums.Kind.HEAVY_RAIN:
+    elif weather == k('HEAVY_RAIN'):
         return [weather, "", "blue"]
-    elif weather == python_weather.enums.Kind.HEAVY_SHOWERS:
+    elif weather == k('HEAVY_SHOWERS', 'MODERATE_OR_HEAVY_RAIN_SHOWER', 'HEAVY_RAIN'):
         return [weather, "", "blue"]
-    elif weather == python_weather.enums.Kind.HEAVY_SNOW:
+    elif weather == k('HEAVY_SNOW'):
         return [weather, "󰖘", "blue"]
-    elif weather == python_weather.enums.Kind.HEAVY_SNOW_SHOWERS:
+    elif weather == k('HEAVY_SNOW_SHOWERS', 'MODERATE_OR_HEAVY_SNOW_SHOWERS', 'HEAVY_SNOW'):
         return [weather, "", "blue"]
-    elif weather == python_weather.enums.Kind.LIGHT_RAIN:
+    elif weather == k('LIGHT_RAIN'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.LIGHT_SHOWERS:
+    elif weather == k('LIGHT_SHOWERS', 'LIGHT_RAIN_SHOWER', 'LIGHT_RAIN'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.LIGHT_SLEET:
+    elif weather == k('LIGHT_SLEET'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.LIGHT_SLEET_SHOWERS:
+    elif weather == k('LIGHT_SLEET_SHOWERS', 'MODERATE_OR_HEAVY_SLEET_SHOWERS', 'LIGHT_SLEET'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.LIGHT_SNOW:
+    elif weather == k('LIGHT_SNOW'):
         return [weather, "󰖘", "cyan"]
-    elif weather == python_weather.enums.Kind.LIGHT_SNOW_SHOWERS:
-        return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.PARTLY_CLOUDY:
+    elif weather == k('LIGHT_SNOW_SHOWERS', 'PATCHY_LIGHT_SNOW', 'LIGHT_SNOW'):
+        return [weather, "", "blue"]
+    elif weather == k('PARTLY_CLOUDY'):
         return [weather, "", "light_grey"]
-    elif weather == python_weather.enums.Kind.SUNNY:
+    elif weather == k('SUNNY'):
         return [weather, "", "yellow"]
-    elif weather == python_weather.enums.Kind.THUNDERY_HEAVY_RAIN:
+    elif weather == k('THUNDERY_HEAVY_RAIN', 'MODERATE_OR_HEAVY_RAIN_IN_AREA_WITH_THUNDER'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.THUNDERY_SHOWERS:
+    elif weather == k('THUNDERY_SHOWERS', 'THUNDERY_OUTBREAKS_IN_NEARBY'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.THUNDERY_SNOW_SHOWERS:
+    elif weather == k('THUNDERY_SNOW_SHOWERS', 'MODERATE_OR_HEAVY_SNOW_IN_AREA_WITH_THUNDER'):
         return [weather, "", "cyan"]
-    elif weather == python_weather.enums.Kind.VERY_CLOUDY:
+    elif weather == k('VERY_CLOUDY', 'OVERCAST'):
         return [weather, "", "light_grey"]
     else:
-        return weather
+        return [weather, "", "white"]
 
 
 async def weather(location, element_order):
