@@ -25,11 +25,11 @@ For example: New York can be written as: `New_York new_york NEw_yOrK "New york" 
 - Precepitation *(in mm)*
 - Moon phase
 
-`richweather` uses [**nerdfonts**](https://www.nerdfonts.com/) to display the symbols. What I use is JetBrains Mono Nerd Font so I know it works. You can try different nerd fonts to see if your works.
+`richweather` uses [**nerdfonts**](https://www.nerdfonts.com/) to display the symbols. What I use is JetBrains Mono Nerd Font so I know it works. You can try different nerd fonts to see if yours works.
 
 ## Installation
 ```bash
-git clone https://github.com/Rizen54/richweather
+git clone https://github.com/s-atrn/richweather
 cd richweather/
 pip install .
 mkdir ~/.config/richweather/
@@ -56,10 +56,6 @@ element_order:
   - day_max
   - day_min
 ```
-
-## Socials
-You can checkout my socials at my profile repo.
-💬 My Discord server if you're interested in my projs: [Rizen's Server](https://discord.gg/BSCkxtxNJ6)
 
 ## Stars
 Please support me by giving a star to this repo.
