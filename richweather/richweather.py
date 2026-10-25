@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import asyncio
+from datetime import datetime
 import json
 import os
 
@@ -113,21 +114,24 @@ def weather_emoji(weather):
 async def weather(location, element_order):
     async with python_weather.Client() as client:
         # Fetch a weather forecast from a city
-        weather = await client.get(location)
+        weather_data = await client.get(location)
 
-        # Get all the required info
-        n = True
-        for daily in weather.daily_forecasts:
-            while n:
-                temp = weather.temperature
-                humidity = weather.humidity
-                prec = weather.precipitation
-                day_max = daily.highest_temperature
-                day_min = daily.lowest_temperature
-                phase = daily.moon_phase
-                kind = weather.kind
-                wind_speed = weather.wind_speed
-                n = False
+        # Find the daily forecast matching today's system date, fallback to index 0 if not found
+        today_date = datetime.now().date()
+        target_daily = weather_data.daily_forecasts[0]
+        for daily in weather_data.daily_forecasts:
+            if hasattr(daily, 'date') and daily.date == today_date:
+                target_daily = daily
+                break
+
+        temp = weather_data.temperature
+        humidity = weather_data.humidity
+        prec = weather_data.precipitation
+        day_max = target_daily.highest_temperature
+        day_min = target_daily.lowest_temperature
+        phase = target_daily.moon_phase
+        kind = weather_data.kind
+        wind_speed = weather_data.wind_speed
 
         # Color the stuff and find lengths
         temp_color = get_temp_color(temp)
@@ -137,13 +141,13 @@ async def weather(location, element_order):
         day_max = colored(f"󰸃 {day_max}°C", "red")
         day_min_len = len(f"󰸂 {day_min}°C")
         day_min = colored(f"󰸂 {day_min}°C", "blue")
-        weather_show = colored(f"{weather.kind} {weather_emoji(kind)[1]}", weather_emoji(kind)[2])
-        weather_len = len(f"{weather.kind} {weather_emoji(kind)[1]}")
+        weather_show = colored(f"{weather_data.kind} {weather_emoji(kind)[1]}", weather_emoji(kind)[2])
+        weather_len = len(f"{weather_data.kind} {weather_emoji(kind)[1]}")
         humidity_len = len(f" {humidity}%")
         humidity = colored(f" {humidity}%", "green")
         precep_len = len(f"  {prec}mm")
         precep = colored(f"  {prec}mm", "blue")
-        wind_len = len(str(wind_speed)) + 6   # Calculating the lengths of this one is really weird for some reason because of the colors and emojis and stuff.
+        wind_len = len(str(wind_speed)) + 6
         wind_speed = colored(f" {wind_speed}km/h", "cyan")
         moon_phase = colored(moon_emoji(phase), "yellow")
         moon_len = len(moon_emoji(phase))
@@ -173,8 +177,7 @@ async def weather(location, element_order):
         right_side_elements = [colored_elements[element_order[i]] for i in range(4, 8)]
         max_left_side = max(lengths[element_order[i]] for i in range(0, 4))
         max_right_side = max(lengths[element_order[i]] for i in range(4, 8))
-        # If it works it works, please dont touch this unless you know what you are doing
-        # The sides are dynamic now
+        
         print(f"""
   ╭─{"─"*(max_left_side)}──┬{"─"*(max_right_side)}───╮
   │ {left_side_elements[0]} {" "*((max_left_side - lengths[element_order[0]]))} │ {right_side_elements[0]} {" "*((max_right_side - lengths[element_order[4]]))} │
@@ -187,22 +190,18 @@ async def weather(location, element_order):
 
 def main():
     config = read_config()
-    # argparse stuff
     parser = argparse.ArgumentParser(description="Get weather information for a specific location.")
     parser.add_argument("location", nargs="?", help="The desired location (optional)")
     args = parser.parse_args()
     if not args.location:
         args.location = config["default_city"]
-    # see https://stackoverflow.com/questions/45600579/asyncio-event-loop-is-closed-when-getting-loop
-    # for more details
     if os.name == 'nt':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    # Running the thing
     try:
         asyncio.run(weather(args.location, config["element_order"]))
     except python_weather.errors.Error:
         print(colored("Please enter a cityname in this format: richweather <city>", "red"))
-    except (json.decoder.JSONDecodeError, json.decoder.JSONDecodeError):
+    except (json.decoder.JSONDecodeError,):
         print(colored("Something is wrong with either the API or python-weather", "red"))
 
 
